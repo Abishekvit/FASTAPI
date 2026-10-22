@@ -1,3 +1,4 @@
+#Phase 3
 from fastapi import FastAPI,status, Response, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -6,7 +7,6 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
 app=FastAPI()
-
 records = []
 def findPostIndex(id):
     for i in range(len(records)):
@@ -18,24 +18,12 @@ class Post(BaseModel):
     title: str
     content: str
     published: bool = True
-    rating: Optional[int] = None
 
 class UpdatedPost(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
     published: bool = True
     rating: Optional[int] = None
-
-while True:
-    try:
-        conn = psycopg2.connect(host='localhost',database='postgres',user='postgres',password='00000000',cursor_factory=RealDictCursor)
-        cursor = conn.cursor()
-        print("Databse connection successful")
-        break
-    except Exception as error:
-        print("Connection failed")
-        print("Error: ",error)
-        time.sleep(2)
 
 @app.get("/")
 def root():
