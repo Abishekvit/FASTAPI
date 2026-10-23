@@ -1,6 +1,5 @@
 from fastapi import FastAPI,status, HTTPException
 from pydantic import BaseModel
-from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
 #psycopg2 is an adapter for Postgre SQL which helps in communication between fastapi and dbms
