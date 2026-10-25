@@ -13,4 +13,10 @@ class Post(Base):
     published = Column(Boolean,server_default='TRUE', nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False,server_default=func.now())
     #there we has primary key and is null in postgre
-    #we use alembic to create migration file and it can chnage the existing table also ulike rn, where if table exists it wont alter
+    #we use alembic to create migration file and it can change the existing table also ulike rn, where if table exists it wont alter
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer,primary_key=True,nullable=False)
+    email = Column(String,nullable=False,unique=True)
+    password = Column(String,nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False,server_default=func.now())
