@@ -18,9 +18,11 @@ def getposts(db:Session = Depends(get_db),current_user :int =Depends(oauth2.get_
 
 @router.get("/{id}",response_model=schemas.PostResponse)
 def getpost(id:int,db:Session=Depends(get_db),current_user :int =Depends(oauth2.get_current_user)):
-    print(current_user)
+    #Cant help it int variable is wrong, but be it anything , a pydantic model is returned
+    print(current_user.email)
+    # we can print its columns
     post = db.query(models.Post).filter(models.Post.id == id).first()
-    print(post)
+    print(post.title)
     if not post: raiseError(id)
     return post
 

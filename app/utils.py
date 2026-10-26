@@ -9,3 +9,5 @@ def verify(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 #verify automatically converts our plain password to hashed and compares
+
+#used to save passwords
