@@ -1,4 +1,4 @@
-from .. import schemas,utils,models
+from .. import schemas,utils,models,oauth2
 from ..database import engine,SessionLocal,get_db
 from sqlalchemy.orm import Session
 from fastapi import FastAPI,status, HTTPException,Depends,APIRouter
@@ -12,19 +12,21 @@ def raiseError(id):
 
 
 @router.get("/",response_model=list[schemas.PostResponse]) #as it is list of dict, we have to tell fastapi it is a list
-def getposts(db:Session = Depends(get_db)):
+def getposts(db:Session = Depends(get_db),current_user :int =Depends(oauth2.get_current_user)):
     posts = db.query(models.Post).all()
     return posts
 
 @router.get("/{id}",response_model=schemas.PostResponse)
-def getpost(id:int,db:Session=Depends(get_db)):
+def getpost(id:int,db:Session=Depends(get_db),current_user :int =Depends(oauth2.get_current_user)):
+    print(current_user)
     post = db.query(models.Post).filter(models.Post.id == id).first()
     print(post)
     if not post: raiseError(id)
     return post
 
 @router.post("/",status_code=status.HTTP_201_CREATED,response_model=schemas.PostResponse)
-def createpost(new_post: schemas.PostCreate,db:Session=Depends(get_db)):
+def createpost(new_post: schemas.PostCreate,db:Session=Depends(get_db),current_user :int =Depends(oauth2.get_current_user)):
+    print(current_user)
     new_post = models.Post(**dict(new_post))
     db.add(new_post)
     db.commit()
@@ -32,7 +34,7 @@ def createpost(new_post: schemas.PostCreate,db:Session=Depends(get_db)):
     return new_post
 
 @router.patch("/{id}",status_code=status.HTTP_202_ACCEPTED,response_model=schemas.PostResponse)
-def updatepost(id : int,updated_post: schemas.PostCreate,db:Session=Depends(get_db)):
+def updatepost(id : int,updated_post: schemas.PostCreate,db:Session=Depends(get_db),current_user :int =Depends(oauth2.get_current_user)):
      post = db.query(models.Post).filter(models.Post.id == id)
      if not post.first(): raiseError(id)
      post.update(dict(updated_post),synchronize_session=False)
@@ -40,7 +42,7 @@ def updatepost(id : int,updated_post: schemas.PostCreate,db:Session=Depends(get_
      return post.first()
 
 @router.delete("/{id}",status_code=status.HTTP_204_NO_CONTENT)
-def deletepost(id:int,db:Session=Depends(get_db)):
+def deletepost(id:int,db:Session=Depends(get_db),current_user :int =Depends(oauth2.get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id)
     if not post.first(): raiseError(id)
     post.delete(synchronize_session=False)
