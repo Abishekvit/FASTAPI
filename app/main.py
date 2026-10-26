@@ -3,15 +3,10 @@
 #SQLAlchemy - most popular ORM(No relationship with Fastapi, can be used with any framework)
 from fastapi import FastAPI,status, HTTPException,Depends,APIRouter
 #SQL Alchemy doesn't know to talk to database, so we still need PSYCOPG2
-import psycopg2
-from psycopg2.extras import RealDictCursor
 #psycopg2 is an adapter for Postgre SQL which helps in communication between fastapi and dbms
 from . import models
 from .database import engine,SessionLocal,get_db
-from . routers import post,user
-
-
-
+from . routers import post,user,auth
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -22,4 +17,5 @@ app=FastAPI()
 app.include_router(post.router)
 #basically we are telling app class to look for routes in post.router and include them in the main app
 app.include_router(user.router)
+app.include_router(auth.router)
 
