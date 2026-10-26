@@ -26,6 +26,6 @@ def login(user_credentials : OAuth2PasswordRequestForm = Depends(),db : Session 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail=f"Invalid Credentials")
 
     access_token = oauth2.create_access_token(data={"user_id":user.id})
+    #here we are creating token
     return {"token":access_token,"token_type":"bearer"}
     #bearer is a type of token which is used to access the protected routes, it is a type of access token
-    return {"token":"login successful"}
