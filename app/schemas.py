@@ -37,3 +37,14 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
      id: int | None = None
+
+class GPTRequest(BaseModel):
+    message: str
+class CodeNote(BaseModel):
+    line_number: int 
+    significance: str 
+    name: str
+    advantage: str
+class CodeNoteResponse(BaseModel):
+    significance: str 
+    name: str
