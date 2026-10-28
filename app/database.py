@@ -1,8 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+
 ##SQLAlchemy is an ORM which helps in communication between fastapi and dbms, BUT IT still needs driver psycopg2
 SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://postgres:00000000@localhost:5432/postgres"
+
 #url is used  for easy change of database, if we want to change database we just have to change this url and not the whole code
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 #engine uses psycopg2 to create multiple connections to database
@@ -18,3 +20,4 @@ def get_db():
         yield db
     finally:
         db.close()
+#this function is to create session give it to api request and then close it after the request is completed, so that we dont have to create session for every api request, we can just call this function and get the session
