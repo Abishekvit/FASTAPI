@@ -6,8 +6,6 @@ from fastapi import FastAPI,status, HTTPException,Depends,APIRouter
 router = APIRouter(prefix="/users",tags=["Users"])
 
 
-
-
 def raiseError(id):
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"{id} not found")
     return
