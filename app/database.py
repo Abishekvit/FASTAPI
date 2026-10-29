@@ -1,9 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-
+from .config import settings
 ##SQLAlchemy is an ORM which helps in communication between fastapi and dbms, BUT IT still needs driver psycopg2
-SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://postgres:00000000@localhost:5432/postgres"
+SQLALCHEMY_DATABASE_URL = f'postgresql+psycopg2://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}'
 
 #url is used  for easy change of database, if we want to change database we just have to change this url and not the whole code
 engine = create_engine(SQLALCHEMY_DATABASE_URL)

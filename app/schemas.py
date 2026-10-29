@@ -1,5 +1,16 @@
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
+
+class UserResponse(BaseModel):
+    id : int
+    email: EmailStr
+    created_at: datetime
+    class Config:
+            from_attributes = True
+class UserLogin(BaseModel):
+     email: EmailStr
+     password: str
+
 # Creating schemas for request response
 
 class Post(BaseModel):
@@ -9,6 +20,8 @@ class Post(BaseModel):
 
 class PostResponse(Post):
     id: int
+    owner_id : int
+    owner : UserResponse
     # created_at: datetime
     class Config:
         from_attributes = True
@@ -21,15 +34,6 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
 #pydantic model can validate password
-class UserResponse(BaseModel):
-    id : int
-    email: EmailStr
-    created_at: datetime
-    class Config:
-            from_attributes = True
-class UserLogin(BaseModel):
-     email: EmailStr
-     password: str
 
 class Token(BaseModel):
     access_token: str

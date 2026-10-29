@@ -12,8 +12,11 @@ def raiseError(id):
 
 
 @router.get("/",response_model=list[schemas.PostResponse]) #as it is list of dict, we have to tell fastapi it is a list
-def getposts(db:Session = Depends(get_db),current_user :int =Depends(oauth2.get_current_user)):
-    posts = db.query(models.Post).all()
+def getposts(db:Session = Depends(get_db),current_user :int =Depends(oauth2.get_current_user),limit:int =20,skip:int=0,search: str=""):
+    #we just pass the query parameter stuff after ? , in decorator
+    #.limit is to get certain number of rec. and .offset is to skip certain rec 
+    print(limit)
+    posts = db.query(models.Post).filter(models.Post.owner_id==current_user.id).filter(models.Post.content.contains(search)).offset(skip).limit(limit).all()
     return posts
 
 @router.get("/{id}",response_model=schemas.PostResponse)
@@ -29,7 +32,11 @@ def getpost(id:int,db:Session=Depends(get_db),current_user :int =Depends(oauth2.
 @router.post("/",status_code=status.HTTP_201_CREATED,response_model=schemas.PostResponse)
 def createpost(new_post: schemas.PostCreate,db:Session=Depends(get_db),current_user :int =Depends(oauth2.get_current_user)):
     print(current_user)
-    new_post = models.Post(**dict(new_post))
+    #now it makes sense, why we return user, cause we can use that to fill in user data
+    current_post = dict(new_post)
+    current_post["owner_id"] = current_user.id
+    #we know that sqlalchemy object have dot method
+    new_post = models.Post(**dict(current_post))
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -39,6 +46,9 @@ def createpost(new_post: schemas.PostCreate,db:Session=Depends(get_db),current_u
 def updatepost(id : int,updated_post: schemas.PostCreate,db:Session=Depends(get_db),current_user :int =Depends(oauth2.get_current_user)):
      post = db.query(models.Post).filter(models.Post.id == id)
      if not post.first(): raiseError(id)
+     print(post.first().owner_id,current_user.id)
+     if post.first().owner_id != current_user.id : raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorised to perform this operation")
+     #we want only the person who created to delete
      post.update(dict(updated_post),synchronize_session=False)
      db.commit()
      return post.first()
@@ -47,6 +57,9 @@ def updatepost(id : int,updated_post: schemas.PostCreate,db:Session=Depends(get_
 def deletepost(id:int,db:Session=Depends(get_db),current_user :int =Depends(oauth2.get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id)
     if not post.first(): raiseError(id)
+    print(post.first().owner_id,current_user.id)
+    if post.first().owner_id != current_user.id : raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorised to perform this operation")
+    #we want only the person who created to delete
     post.delete(synchronize_session=False)
     #synchronize objects in memory
     db.commit()
