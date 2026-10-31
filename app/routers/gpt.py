@@ -18,7 +18,6 @@
 # def chat_stream(request: GPTRequest):
 #     def events():
 #         usage = None
-
 #         for chunk in client.models.generate_content_stream(
 #             # a piece of data is retrieved and called as chunk
 #             #there it was content
@@ -40,7 +39,6 @@
 #         yield "event: done\ndata: {}\n\n"
 #         #done event to show all messages or tokens have reached
 #         #yield allows to return multiple items instead of one
-
 #     return StreamingResponse(
 #         events(),
 #         media_type="text/event-stream",
