@@ -1,6 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
-
+from pydantic.types import conint
+from typing import Literal
+#to allow 0 or 1 only
 class UserResponse(BaseModel):
     id : int
     email: EmailStr
@@ -26,6 +28,13 @@ class PostResponse(Post):
     class Config:
         from_attributes = True
         #this class is to tell pydantic that orm dict can also be validated reponse
+class PostVoteOut(BaseModel):
+    Post: PostResponse
+    votes : int
+    class Config:
+            from_attributes = True
+
+
 
 class PostCreate(Post):
     pass
@@ -52,3 +61,11 @@ class CodeNote(BaseModel):
 class CodeNoteResponse(BaseModel):
     significance: str 
     name: str
+
+
+#VOTE
+class Vote(BaseModel):
+    post_id: int
+    dir : Literal[0,1]
+
+    

@@ -2,6 +2,8 @@ from .. import schemas,utils,models,oauth2
 from ..database import engine,SessionLocal,get_db
 from sqlalchemy.orm import Session
 from fastapi import FastAPI,status, HTTPException,Depends,APIRouter
+from sqlalchemy import func
+#func gives access to aggregate functions
 router = APIRouter(prefix="/posts",tags=["Posts"])
 #we created a router object
 #it groups all the routers together and we can include them in main.py
@@ -11,21 +13,24 @@ def raiseError(id):
 
 
 
-@router.get("/",response_model=list[schemas.PostResponse]) #as it is list of dict, we have to tell fastapi it is a list
+@router.get("/",response_model=list[schemas.PostVoteOut]) #as it is list of dict, we have to tell fastapi it is a list
 def getposts(db:Session = Depends(get_db),current_user :int =Depends(oauth2.get_current_user),limit:int =20,skip:int=0,search: str=""):
     #we just pass the query parameter stuff after ? , in decorator
     #.limit is to get certain number of rec. and .offset is to skip certain rec 
     print(limit)
-    posts = db.query(models.Post).filter(models.Post.owner_id==current_user.id).filter(models.Post.content.contains(search)).offset(skip).limit(limit).all()
-    return posts
+    # posts = db.query(models.Post).filter(models.Post.owner_id==current_user.id).filter(models.Post.content.contains(search)).offset(skip).limit(limit).all()
+    results = db.query(models.Post,func.count(models.Vote.post_id).label("votes")).join(models.Vote,models.Vote.post_id == models.Post.id,isouter=True).group_by(models.Post.id).filter(models.Post.owner_id==current_user.id).filter(models.Post.content.contains(search)).offset(skip).limit(limit).all()
+    #we have joined posts with votes
+    # label to label count column
+    return results
 
-@router.get("/{id}",response_model=schemas.PostResponse)
+@router.get("/{id}",response_model=schemas.PostVoteOut)
 def getpost(id:int,db:Session=Depends(get_db),current_user :int =Depends(oauth2.get_current_user)):
     #Cant help it int variable is wrong, but be it anything , a pydantic model is returned
     print(current_user.email)
     # we can print its columns
-    post = db.query(models.Post).filter(models.Post.id == id).first()
-    print(post.title)
+    # post = db.query(models.Post).filter(models.Post.id == id).first()
+    post = db.query(models.Post,func.count(models.Vote.post_id).label("votes")).join(models.Vote,models.Vote.post_id == models.Post.id,isouter=True).group_by(models.Post.id).filter(models.Post.id == id).filter(models.Post.owner_id==current_user.id).first()
     if not post: raiseError(id)
     return post
 
