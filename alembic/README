@@ -1,1 +1,16 @@
-Generic single-database configuration.
+#Doubt i had was could you not alter table using sqlalchemy, yes, you could, but not using orm, 
+#so we needed it for db migration as in chnages, add delete columns etc. 
+#it has version history- upgrade downgrade
+#and it is made to work with sql alchemy
+
+
+# u create a revision using alembic revision -m" . "
+#revsion tracks verison history, and every revision has a str revision number, you can execute my saying alembic upgrade or downgrade revsion_number
+
+#alembic heads  , gives the head note or revision
+#alembic current
+# to roll back do alembic downgrade -1 , or -x for xth previous revision, or revision number to go to
+
+## you might be mad, but reality is we dont need to create by ourself,
+# use alembic revision --autogenerate -m" " to create a revision file, it will check the models and db and create a revision file for you, but it is not perfect, so check the file and edit if needed
+# it uses models.py to check the schema and compare it with db, and create a revision file for you, but it is not perfect, so check the file and edit if needed
