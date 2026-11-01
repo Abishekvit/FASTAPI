@@ -2,4 +2,3 @@
 .postman
 __pycache__
 .env
-.alembic
