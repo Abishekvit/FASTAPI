@@ -2,6 +2,7 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
+    gemini_api_key : str
     database_hostname : str
     database_password : str
     database_port:str

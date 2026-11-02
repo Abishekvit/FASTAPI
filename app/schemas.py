@@ -68,4 +68,25 @@ class Vote(BaseModel):
     post_id: int
     dir : Literal[0,1]
 
-    
+
+#VECTOR
+class ProjectCreate(BaseModel):
+    name: str
+    tech_stack: str
+    description: str
+
+class ProjectOut(BaseModel):
+    id: int
+    name: str
+    tech_stack: str
+    description: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class VectorizeOut(BaseModel):
+    embedded: int
+
+class ProjectSearch(BaseModel):
+    query: str
+    limit: int = 5
