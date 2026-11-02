@@ -6,6 +6,8 @@ from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship
 #we imported relationship 
+from pgvector.sqlalchemy import Vector
+#we have imported vector from pgvector.sqlalchemy to use vector data type in our models
 
 #Inherited properties and object mapping of Base class
 
@@ -36,3 +38,15 @@ class Vote(Base):
         "users.id", ondelete="CASCADE"), primary_key=True)
     post_id = Column(Integer,ForeignKey(
             "posts.id", ondelete="CASCADE"), primary_key=True)
+
+
+class Project(Base):
+    __tablename__ = "projects"
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String, nullable=False)
+    tech_stack = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+    embedding = Column(Vector(768))
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
+    #vector column creared
