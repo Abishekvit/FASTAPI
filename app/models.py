@@ -1,5 +1,5 @@
 #We are gonna define schema
-from sqlalchemy import Column, Integer, String,Boolean,ForeignKey
+from sqlalchemy import Column, Integer, String,Boolean,ForeignKey,Index
 from .database import Base
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import TIMESTAMP
@@ -40,6 +40,11 @@ class Vote(Base):
             "posts.id", ondelete="CASCADE"), primary_key=True)
 
 
+from sqlalchemy import Column, Integer, String, ForeignKey, Index, Computed, func
+from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.sql.sqltypes import TIMESTAMP
+from pgvector.sqlalchemy import Vector
+
 class Project(Base):
     __tablename__ = "projects"
     id = Column(Integer, primary_key=True, nullable=False)
@@ -49,4 +54,37 @@ class Project(Base):
     embedding = Column(Vector(768))
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
-    #vector column creared
+    search_tsv = Column(
+        TSVECTOR,
+        Computed("to_tsvector('english', name || ' ' || tech_stack || ' ' || description)",
+                 persisted=True),
+        # It stores only the words present, with positions: 'analyz':1 'genom':2
+        #automatically updates gin
+    )
+    #table_args is another way to define indexes, constraints, etc. It is a tuple of Index objects
+    __table_args__ = (
+        Index(
+            "ix_projects_embedding_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_with={"m": 4, "ef_construction": 8},
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+        Index("ix_projects_tsv", "search_tsv", postgresql_using="gin"),
+        #Generalised inverted index, analyz  → [1, 4]
+        # genom   → [1]
+        # python  → [1, 3]
+        # bus     → [2]
+        #usually it is row -> words, this is reverse, word -> rows, so we can search for a word and get all rows
+    )
+#     __table_args__ = (
+#     Index(
+#         "ix_projects_embedding_ivf",
+#         "embedding",
+#         postgresql_using="ivfflat",
+#         postgresql_with={"lists": 100},
+#         postgresql_ops={"embedding": "vector_cosine_ops"},
+#     ),
+# )
+#for ivfflat: which is basically forming cluster centroid, then addig the new data to closese centroid , and then we take mean of vectors inside the cluster and find centroid and check if it is close to any and add that
+#so we have bags to look into , optimised search, may not be true
