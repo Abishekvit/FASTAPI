@@ -70,6 +70,7 @@ class Project(Base):
             postgresql_with={"m": 4, "ef_construction": 8},
             postgresql_ops={"embedding": "vector_cosine_ops"},
         ),
+        #TEXT SEARCH VECTOR
         Index("ix_projects_tsv", "search_tsv", postgresql_using="gin"),
         #Generalised inverted index, analyz  → [1, 4]
         # genom   → [1]
@@ -88,3 +89,30 @@ class Project(Base):
 # )
 #for ivfflat: which is basically forming cluster centroid, then addig the new data to closese centroid , and then we take mean of vectors inside the cluster and find centroid and check if it is close to any and add that
 #so we have bags to look into , optimised search, may not be true
+
+#Chunking and document
+class Document(Base):
+    __tablename__ = "documents"
+    id = Column(Integer, primary_key=True)
+    filename = Column(String, nullable=False)
+    file_hash = Column(String, nullable=False)
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
+
+class Chunk(Base):
+    __tablename__ = "chunks"
+    id = Column(Integer, primary_key=True)
+    document_id = Column(Integer, ForeignKey("documents.id", ondelete="CASCADE"), nullable=False)
+    page = Column(Integer)
+    chunk_index = Column(Integer)
+    content = Column(String, nullable=False)
+    embedding = Column(Vector(768))
+    search_tsv = Column(TSVECTOR, Computed("to_tsvector('english', content)", persisted=True))
+    document = relationship("Document")
+
+    __table_args__ = (
+        Index("ix_chunks_embedding_hnsw", "embedding", postgresql_using="hnsw",
+              postgresql_with={"m": 16, "ef_construction": 64},
+              postgresql_ops={"embedding": "vector_cosine_ops"}),
+        Index("ix_chunks_tsv", "search_tsv", postgresql_using="gin"),
+    )

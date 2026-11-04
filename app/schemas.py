@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 from pydantic.types import conint
 from typing import Literal
 #to allow 0 or 1 only
@@ -90,3 +90,15 @@ class VectorizeOut(BaseModel):
 class ProjectSearch(BaseModel):
     query: str
     limit: int = 5
+
+class ChunkOut(BaseModel):
+    id: int
+    document_id: int
+    page: int | None
+    content: str
+    model_config = ConfigDict(from_attributes=True)
+
+class DocumentUploadOut(BaseModel):
+    document_id: int
+    chunks: list[ChunkOut]
+    model_config = ConfigDict(from_attributes=True)
