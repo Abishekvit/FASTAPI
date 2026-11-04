@@ -6,7 +6,7 @@ from .. import models, schemas, oauth2
 from ..database import get_db
 from ..chunking import split_text
 from .vector import embed_texts
-
+import pytesseract
 router = APIRouter(prefix="/documents", tags=["Documents"])
 BATCH = 50
 #send 50 chunks to gpt to get vector embeddings 
@@ -15,6 +15,15 @@ VECTOR_WEIGHT, KEYWORD_WEIGHT = 1.0, 1.0
 def clean(t: str) -> str:
     t = re.sub(r"-\n(\w)", r"\1", t)      # fix hyphenated line breaks
     return re.sub(r"[ \t]+", " ", t).strip()
+
+def extract_text(page):
+    text = page.get_text()
+    #firstly try page.get_text(), if less than 50 got for ocr
+    if len(text.strip()) < 50:
+        text = pytesseract.image_to_string(
+            page.get_pixmap(dpi=300).pil_image()
+        )
+    return clean(text)
 
 @router.post("/", status_code=status.HTTP_201_CREATED,response_model=schemas.DocumentUploadOut)
 async def upload(file: UploadFile, db: Session = Depends(get_db),
@@ -26,12 +35,14 @@ async def upload(file: UploadFile, db: Session = Depends(get_db),
         raise HTTPException(status.HTTP_409_CONFLICT, "Already uploaded")
 
     pdf = pymupdf.open(stream=data, filetype="pdf")
+    #pymupdf only for pdf opening and page contents in text, not ocr
     doc = models.Document(filename=file.filename, file_hash=h, owner_id=current_user.id)
     db.add(doc); db.flush()
 
     rows, idx = [], 0
     for pno, page in enumerate(pdf, start=1):
-        for text in split_text(clean(page.get_text())):
+        for text in split_text(extract_text(page)):
+            #now it goes to extract_text function
             rows.append(models.Chunk(document_id=doc.id, page=pno, chunk_index=idx,
                                      content=f"{file.filename}\n{text}"))  # contextual prefix
             idx += 1
@@ -59,7 +70,7 @@ def search(body: schemas.ProjectSearch, db: Session = Depends(get_db),
 
     idf = math.log(1 + (N - df + 0.5) / (df + 0.5))
     #formula to make rare elements in tsvector more valued
-    
+
     fts_ids = [r.id for r in base.filter(C.search_tsv.op("@@")(tsq))
            .order_by((func.ts_rank_cd(C.search_tsv, tsq) * idf).desc()).limit(20)]
     scores = {}
