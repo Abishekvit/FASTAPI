@@ -1,6 +1,7 @@
 def split_text(text: str, size: int = 800, overlap: int = 120) -> list[str]:
     seps = ["\n\n", "\n", ". ", " "]
-
+    #here the chunking method used is split into paragraphs, then sentences, then words, and finally by character count if necessary. The function recursively splits the text based on the specified separators until the chunks are of the desired size or smaller.
+    #size is 800 characters, overlap is 120 characters, meaning that the last 120 characters of one chunk will be included at the beginning of the next chunk to maintain context.
     def rec(t, seps):
         if len(t) <= size:
             return [t]
