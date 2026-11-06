@@ -1,83 +1,25 @@
-from fastapi import FastAPI,status, Response, HTTPException
-from pydantic import BaseModel
-from typing import Optional
-from random import randrange
-import psycopg2
-from psycopg2.extras import RealDictCursor
-import time
+from fastapi import FastAPI,status, HTTPException,Depends
+from .database import engine
+#engine is needed to bind and perform operations in db
+from . import models
+#models has all ORM classes inherited classes for tables to create all tables
+# models.Base.metadata.create_all(bind=engine)
+# we dont need to do this as alembic will do this for us, we just need to create revision and upgrade it
+from . routers import post,user,auth,gpt,vote,vector,documents
+
+#Cross origin resource sharing, it is a security feature which allows only certain domains to access the api
+origins = ["*"]
+
 app=FastAPI()
 
-records = []
-def findPostIndex(id):
-    for i in range(len(records)):
-        if records[i]["id"]==id: return i
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"{id} not found")
-    return
+# app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-    rating: Optional[int] = None
-
-class UpdatedPost(BaseModel):
-    title: Optional[str] = None
-    content: Optional[str] = None
-    published: bool = True
-    rating: Optional[int] = None
-
-while True:
-    try:
-        conn = psycopg2.connect(host='localhost',database='postgres',user='postgres',password='00000000',cursor_factory=RealDictCursor)
-        cursor = conn.cursor()
-        print("Databse connection successful")
-        break
-    except Exception as error:
-        print("Connection failed")
-        print("Error: ",error)
-        time.sleep(2)
-
-@app.get("/")
-def root():
-    return{"message":"Hello World"}
-
-@app.get("/posts")
-def getposts():
-    return {"content":records}
-
-@app.get("/posts/{id}")
-def getpost(id:int):
-    postidx = findPostIndex(id)
-    return{"message":"Post exists","post_content":records[postidx]}
-
-@app.post("/posts",status_code=status.HTTP_201_CREATED)
-def createpost(new_post: Post):
-    new_post = dict(new_post)
-    new_post["id"] = randrange(1,1000000)
-    records.append(new_post)
-    print(f"New record created {new_post}")
-    return{"message":"Post created successfully"}
-
-@app.patch("/posts/{id}",status_code=status.HTTP_202_ACCEPTED)
-def updatepost(id : int,updated_post: UpdatedPost):
-    updated_post = dict(updated_post)
-    postidx = findPostIndex(id)
-    post = records[postidx]
-    for i in updated_post:
-        if updated_post[i]!=None :
-            post[i]=updated_post[i]
-    records[postidx]=post
-    print(f"Updated the post : {post}")
-    return({"message":f"updated record of id : {id}"})
-
-@app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
-def deletepost(id:int):
-    postidx = findPostIndex(id)
-    records.pop(postidx)
-    print(f"Record {id} deleted")
-
-
-            
-    
-
+app.include_router(post.router)
+app.include_router(user.router)
+app.include_router(auth.router)
+app.include_router(vote.router)
+app.include_router(vector.router)
+app.include_router(documents.router)
+# app.include_router(gpt.router)
+#basically we are telling app class to look for routes in post.router and include them in the main app
 
