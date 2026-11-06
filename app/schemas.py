@@ -102,3 +102,8 @@ class DocumentUploadOut(BaseModel):
     document_id: int
     chunks: list[ChunkOut]
     model_config = ConfigDict(from_attributes=True)
+
+class RAGResponse(BaseModel):
+    answer : str
+    chunks: list[ChunkOut]
+    model_config = ConfigDict(from_attributes=True)
