@@ -25,7 +25,11 @@ def upgrade() -> None:
         ALTER TABLE projects ADD COLUMN search_tsv tsvector
         GENERATED ALWAYS AS (to_tsvector('english', name || ' ' || tech_stack || ' ' || description)) STORED
     """)
-    op.add_column('projects', sa.Column('search_tsv', postgresql.TSVECTOR(), sa.Computed("to_tsvector('english', name || ' ' || tech_stack || ' ' || description)", persisted=True), nullable=True))
+    op.execute("""
+        ALTER TABLE projects
+        ADD COLUMN IF NOT EXISTS search_tsv TSVECTOR
+        GENERATED ALWAYS AS (to_tsvector('english', name || ' ' || tech_stack || ' ' || description)) STORED
+    """)
     op.create_index('ix_projects_tsv', 'projects', ['search_tsv'], unique=False, postgresql_using='gin')
     # ### end Alembic commands ###
 

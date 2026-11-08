@@ -23,3 +23,6 @@ app.include_router(documents.router)
 # app.include_router(gpt.router)
 #basically we are telling app class to look for routes in post.router and include them in the main app
 
+@app.get('/')
+def x():
+    return("Hello")

@@ -27,5 +27,5 @@ def login(user_credentials : OAuth2PasswordRequestForm = Depends(),db : Session 
 
     access_token = oauth2.create_access_token(data={"user_id":user.id})
     #here we are creating token
-    return {"token":access_token,"token_type":"bearer"}
+    return {"access_token":access_token,"token_type":"bearer"}
     #bearer is a type of token which is used to access the protected routes, it is a type of access token
