@@ -18,7 +18,7 @@ jobs:
       GEMINI_API_KEY: ${{secrets.GEMINI_API_KEY}}
     services:
       postgres:
-        image: postgres
+        image: pgvector/pgvector:pg18
         env:
           POSTGRES_USER: ${{secrets.DATABASE_USERNAME}}
           POSTGRES_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
