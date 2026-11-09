@@ -67,7 +67,6 @@ jobs:
           context: ./
           file: ./Dockerfile
           push : true
-          tags: ${{secrets.DOCKER_HUB_USERNAME}}/fastapi-cicd:latest
 
 
       
