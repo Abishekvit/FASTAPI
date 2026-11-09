@@ -53,29 +53,41 @@ jobs:
         run: |
           pip install pytest
           pytest
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
+      # - name: Login to DockerHub
+      #   uses: docker/login-action@v1
+      #   with:
+      #     username: ${{secrets.DOCKER_HUB_USERNAME}}
+      #     password: ${{secrets.DOCKER_HUB_ACCESS_TOKEN}}
+      # - name: Set up Docker Buildx
+      #   id : buildx
+      #   uses: docker/setup-buildx-action@v1
+      # - name: Build and Push Docker Image
+      #   id: docker_build
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     context: ./
+      #     file: ./Dockerfile
+      #     builder: ${{ steps.buildx.outputs.name }}
+      #     push : true
+      #     tags: ${{secrets.DOCKER_HUB_USERNAME}}/fastapi-cicd:latest
+      #     cache-from: type=local,src=/tmp/.buildx-cache
+      #     cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+      # - name: Image digest
+      #   run: 'echo "Image digest: ${{ steps.docker_build.outputs.digest }}"'
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy to ubuntu server
+        uses: appleboy/ssh-action@master
         with:
-          username: ${{secrets.DOCKER_HUB_USERNAME}}
-          password: ${{secrets.DOCKER_HUB_ACCESS_TOKEN}}
-      - name: Set up Docker Buildx
-        id : buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Build and Push Docker Image
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          context: ./
-          file: ./Dockerfile
-          builder: ${{ steps.buildx.outputs.name }}
-          push : true
-          tags: ${{secrets.DOCKER_HUB_USERNAME}}/fastapi-cicd:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-      - name: Image digest
-        run: 'echo "Image digest: ${{ steps.docker_build.outputs.digest }}"'
-
-
+          host: ${{secrets.PROD_HOST}}
+          username: ${{secrets.PROD_USERNAME}}
+          key: ${{secrets.PROD_PASSWORD}}
+          script: |
+            cd app/src
+            git pull origin main
+            echo "${{ secrets.PROD_PASSWORD }}" | sudo -S systemctl restart api
 
       
 
