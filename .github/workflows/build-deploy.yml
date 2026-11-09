@@ -76,6 +76,8 @@ jobs:
       #   run: 'echo "Image digest: ${{ steps.docker_build.outputs.digest }}"'
   deploy:
     needs: build
+    environment:
+      name: testing
     runs-on: ubuntu-latest
     steps:
       - name: deploy to ubuntu server
