@@ -15,3 +15,16 @@ jobs:
         run: echo "hello Abishek"
       
 # the biggst problem is no database exists, so we need to create a service container of postgres
+
+# Make changes to code                 CI
+# Commit changes  -------------------> Pull source code
+#                                         Install Dependencies
+#                                     Run Automated Tests       CD
+#                                     Build Image ---------> Grabs Images
+#                                                             Update Production
+# Run Tests
+# Build Image
+# Deploy
+# Left side is manual
+
+#It is dead simple , you provide steps in yaml or json
