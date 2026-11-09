@@ -1,7 +1,7 @@
 from .. import schemas,utils,models,oauth2
 from ..database import engine,SessionLocal,get_db
 from sqlalchemy.orm import Session
-from fastapi import FastAPI,status, HTTPException,Depends,APIRouter
+from fastapi import FastAPI,status, HTTPException,Depends,APIRouter,Response
 from sqlalchemy import func
 #func gives access to aggregate functions
 router = APIRouter(prefix="/posts",tags=["Posts"])
@@ -57,8 +57,9 @@ def updatepost(id : int,updated_post: schemas.PostCreate,db:Session=Depends(get_
      post.update(dict(updated_post),synchronize_session=False)
      db.commit()
      return post.first()
+    
 
-@router.delete("/{id}",status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}")
 def deletepost(id:int,db:Session=Depends(get_db),current_user :int =Depends(oauth2.get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id)
     if not post.first(): raiseError(id)
@@ -68,3 +69,4 @@ def deletepost(id:int,db:Session=Depends(get_db),current_user :int =Depends(oaut
     post.delete(synchronize_session=False)
     #synchronize objects in memory
     db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

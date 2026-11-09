@@ -94,7 +94,8 @@ def search(body: schemas.ProjectSearch, db: Session = Depends(get_db),
 @router.post("/rag", response_model=schemas.RAGResponse)
 def search(body: schemas.ProjectSearch, db: Session = Depends(get_db),
            current_user=Depends(oauth2.get_current_user)):
-
+    if not body.query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty")
     C, D = models.Chunk, models.Document
     qv = embed_texts([body.query], "RETRIEVAL_QUERY")[0]
     tsq = func.websearch_to_tsquery("english", " or ".join(body.query.split()))
