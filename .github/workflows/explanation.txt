@@ -1,0 +1,17 @@
+name: Build and Deploy Code
+
+on : [push, pull_request]
+
+#to put env store in setting - secrets
+# or create an environment in settings and put all secrets over there
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: pulling git repo
+        uses: actions/checkout@v2
+        #this is just a github action which is a shorter version of steps we need to do
+      - name: Say Hi to Abishek
+        run: echo "hello Abishek"
+      
+
