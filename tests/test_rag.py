@@ -34,3 +34,16 @@ def test_rag_with_wrong_query(authorized_client):
     )
 
     assert res.status_code == 400
+
+# Make changes to code                 CI
+# Commit changes  -------------------> Pull source code
+#                                         Install Dependencies
+#                                     Run Automated Tests       CD
+#                                     Build Image ---------> Grabs Images
+#                                                             Update Production
+# Run Tests
+# Build Image
+# Deploy
+# Left side is manual
+
+#It is dead simple , you provide steps in yaml or json
