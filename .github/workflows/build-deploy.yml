@@ -18,7 +18,7 @@ jobs:
       GEMINI_API_KEY: ${{secrets.GEMINI_API_KEY}}
     services:
       postgres:
-        image: pgvector/pgvector:pg18
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_USER: ${{secrets.DATABASE_USERNAME}}
           POSTGRES_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
@@ -44,7 +44,7 @@ jobs:
         run: python -m pip install --upgrade pip
       - name: install all dependencies
         run: pip install -r requirements.txt
-      - name: Enable vector extension in Postgres
+      - name: Enable Vector Extension in Database
         env:
           PGPASSWORD: ${{secrets.DATABASE_PASSWORD}}
         run: |
@@ -53,6 +53,20 @@ jobs:
         run: |
           pip install pytest
           pytest
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{secrets.DOCKER_HUB_USERNAME}}
+          password: ${{secrets.DOCKER_HUB_ACCESS_TOKEN}}
+      - name: Set up Docker Buildx
+        id : buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          context: ./
+          file: ./Dockerfile
+          push : true
+          tags: ${{secrets.DOCKER_HUB_USERNAME}}/fastapi:latest
+      
       
 
 

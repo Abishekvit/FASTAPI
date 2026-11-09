@@ -7,6 +7,7 @@ from app.config import settings
 from app.database import get_db,Base
 from alembic import command
 import pytest
+from sqlalchemy import text
 from app.oauth2 import create_access_token
 SQLALCHEMY_DATABASE_URL = f'postgresql+psycopg2://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/fastapi_test'
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
@@ -29,6 +30,9 @@ app.dependency_overrides[get_db] = override_get_db
 @pytest.fixture(scope="function")
 #scope being module, client wont be destroyed in every function, it will stay intact for entire module and then when we run again it will drop at end
 def client():
+    with engine.connect() as connection:
+        connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+        connection.commit()
     #run our code before we run our test
     Base.metadata.create_all(bind=engine)
     yield TestClient(app)
