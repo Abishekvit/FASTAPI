@@ -12,7 +12,8 @@ from google import genai
 from google.genai import types
 from ..config import settings
 
-client = genai.Client(api_key=settings.gemini_api_key)
+def get_client():
+    return genai.Client(api_key=settings.gemini_api_key)
 
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
@@ -35,7 +36,8 @@ def extract_text(page):
 
 @router.post("/", status_code=status.HTTP_201_CREATED,response_model=schemas.DocumentUploadOut)
 async def upload(file: UploadFile, db: Session = Depends(get_db),
-                 current_user=Depends(oauth2.get_current_user)):
+                 current_user=Depends(oauth2.get_current_user),
+                 client = Depends(get_client)):
     data = await file.read()
     h = hashlib.sha256(data).hexdigest()
     #this creates a particular hash value to identify the file
@@ -66,7 +68,8 @@ async def upload(file: UploadFile, db: Session = Depends(get_db),
 
 @router.post("/search", response_model=list[schemas.ChunkOut])
 def search(body: schemas.ProjectSearch, db: Session = Depends(get_db),
-           current_user=Depends(oauth2.get_current_user)):
+           current_user=Depends(oauth2.get_current_user),
+           client = Depends(get_client)):
     C, D = models.Chunk, models.Document
     qv = embed_texts([body.query], "RETRIEVAL_QUERY")[0]
     tsq = func.websearch_to_tsquery("english", " or ".join(body.query.split()))
@@ -93,7 +96,8 @@ def search(body: schemas.ProjectSearch, db: Session = Depends(get_db),
 
 @router.post("/rag", response_model=schemas.RAGResponse)
 def search(body: schemas.ProjectSearch, db: Session = Depends(get_db),
-           current_user=Depends(oauth2.get_current_user)):
+           current_user=Depends(oauth2.get_current_user),
+           client = Depends(get_client)):
     if not body.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty")
     C, D = models.Chunk, models.Document
