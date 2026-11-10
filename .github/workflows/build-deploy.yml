@@ -16,6 +16,7 @@ jobs:
       ALGORITHM: ${{secrets.ALGORITHM}}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
       GEMINI_API_KEY: ${{secrets.GEMINI_API_KEY}}
+      TEST_GEMINI_API_KEY: ${{secrets.TEST_GEMINI_API_KEY}}
     services:
       postgres:
         image: pgvector/pgvector:pg16
