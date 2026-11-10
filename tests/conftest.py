@@ -23,7 +23,7 @@ def override_get_db():
         db.close()
 
 def override_get_client():
-    return genai.Client(api_key=settings.test_gemini_api_keygemini_api_key)
+    return genai.Client(api_key=settings.test_gemini_api_key)
 # to use alternate key for testing
 app.dependency_overrides[get_db] = override_get_db
 #our aim is to create new table for testing while keeping code intact, so this override function helps us to replace the dependency of session with our new session with a different database
